@@ -345,7 +345,8 @@ function checkAuthCallback() {
   var auth = params.get('auth');
   if (auth === 'success') {
     window.history.replaceState({}, '', '/');
-    showToast('✅ יומן גוגל חובר בהצלחה!', 'התזכורות ישלחו אוטומטית', null);
+    // Re-check gcal status after successful auth
+    setTimeout(function() { checkGcalStatus(); }, 500);
   } else if (auth === 'error') {
     window.history.replaceState({}, '', '/');
     alert('שגיאה בחיבור ליומן גוגל. נסי שוב.');
