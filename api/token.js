@@ -44,6 +44,8 @@ module.exports = async function(req, res) {
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
   if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
     try {
       const data = await getToken();
       if (!data) { res.status(404).json({ error: 'no token' }); return; }
