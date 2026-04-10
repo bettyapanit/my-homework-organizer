@@ -1,6 +1,26 @@
-const { kv } = require('@vercel/kv');
-const TOKEN_KEY = 'gcal_main_token';
+const TOKEN_KEY = 'gcal_token';
 const CLIENT_ID = '10963602013-d8qti4amctuimsuo5jevvgkirtdi5bds.apps.googleusercontent.com';
+
+async function getToken() {
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  if (!url || !token) return null;
+  const r = await fetch(`${url}/get/${TOKEN_KEY}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const d = await r.json();
+  return d.result ? JSON.parse(d.result) : null;
+}
+
+async function setToken(data) {
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  await fetch(`${url}/set/${TOKEN_KEY}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(JSON.stringify(data))
+  });
+}
 
 module.exports = async function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,7 +29,7 @@ module.exports = async function(req, res) {
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
   try {
-    const stored = await kv.get(TOKEN_KEY);
+    const stored = await getToken();
     if (!stored || !stored.refresh_token) {
       res.status(401).json({ error: 'no refresh token' }); return;
     }
@@ -32,7 +52,7 @@ module.exports = async function(req, res) {
       access_token: data.access_token,
       expiry: Date.now() + data.expires_in * 1000
     });
-    await kv.set(TOKEN_KEY, updated);
+    await setToken(updated);
     res.status(200).json({ access_token: data.access_token, expiry: updated.expiry });
   } catch(e) {
     res.status(500).json({ error: e.message });
