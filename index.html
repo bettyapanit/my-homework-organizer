@@ -345,8 +345,7 @@ function checkAuthCallback() {
   var auth = params.get('auth');
   if (auth === 'success') {
     window.history.replaceState({}, '', '/');
-    // Re-check gcal status after successful auth
-    setTimeout(function() { checkGcalStatus(); }, 500);
+    checkGcalStatus();
   } else if (auth === 'error') {
     window.history.replaceState({}, '', '/');
     alert('שגיאה בחיבור ליומן גוגל. נסי שוב.');
@@ -356,7 +355,7 @@ function checkAuthCallback() {
 // ── GCAL STATUS ──
 function checkGcalStatus() {
   setGcalBar('loading', 'בודק חיבור...', null, null);
-  fetch('/api/token')
+  fetch('/api/token?t=' + Date.now())
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.access_token) {
