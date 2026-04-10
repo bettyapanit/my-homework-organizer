@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#A8D8EA">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="שיעורי בית">
+<link rel="manifest" href="manifest.json">
+<title>שיעורי הבית שלי</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --sky:#A8D8EA;--sky-d:#5BAFCF;--sky-dd:#2E86A8;--sky-l:#D6EEF8;--sky-ll:#EDF7FC;
+  --rose:#F4BACB;--rose-d:#D4698A;--rose-l:#FDE8F0;--rose-ll:#FEF4F8;
+  --white:#FFFFFF;--bg:#F6FBFE;
+  --text:#1E2D3D;--text2:#5A7184;--text3:#9FB3C2;
+  --border:#C8E6F4;--r:18px;--r-sm:11px;
+  --sh:0 2px 14px rgba(91,175,207,.15);--sh-lg:0 8px 32px rgba(91,175,207,.20);
+  --font:'Heebo',sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;max-width:430px;margin:0 auto}
+.hdr{background:linear-gradient(160deg,var(--sky) 0%,var(--rose) 100%);padding:20px 20px 22px;border-radius:0 0 28px 28px;box-shadow:0 4px 24px rgba(168,216,234,.5);position:sticky;top:0;z-index:50}
+.hdr-row{display:flex;align-items:center;justify-content:space-between}
+.hdr-title{font-size:22px;font-weight:900;color:var(--text);letter-spacing:-.5px}
+.hdr-sub{font-size:12px;color:rgba(30,45,61,.55);font-weight:500;margin-top:2px}
+.add-btn{background:var(--white);color:var(--sky-dd);border:none;width:44px;height:44px;border-radius:50%;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 16px rgba(0,0,0,.13);transition:transform .14s;flex-shrink:0}
+.add-btn:active{transform:scale(.88)}
+.gcal-bar{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;border-bottom:1.5px solid var(--border)}
+.gcal-bar.off{background:#FFF8F0;color:#8B5E00}
+.gcal-bar.on{background:#F0FFF4;color:#1E6E3A}
+.gcal-bar.loading{background:var(--sky-ll);color:var(--sky-dd)}
+.gcal-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.gcal-bar.off .gcal-dot{background:#F39C12}
+.gcal-bar.on .gcal-dot{background:#27AE60}
+.gcal-bar.loading .gcal-dot{background:var(--sky-d);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.gcal-btn{margin-right:auto;border:none;border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);flex-shrink:0}
+.gcal-bar.off .gcal-btn{background:#F39C12;color:#fff}
+.gcal-bar.on .gcal-btn{background:#E8F5E9;color:#1E6E3A;border:1px solid #A5D6A7}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 14px 4px}
+.tab{background:var(--white);border:2px solid var(--border);border-radius:var(--r-sm);padding:10px 6px 8px;cursor:pointer;text-align:center;transition:all .18s;box-shadow:var(--sh)}
+.tab:active{transform:scale(.94)}
+.tab.active{background:linear-gradient(135deg,var(--sky) 0%,var(--rose) 100%);border-color:transparent;box-shadow:0 4px 18px rgba(91,175,207,.3)}
+.tab-num{font-size:20px;font-weight:900;color:var(--sky-dd);line-height:1;margin-bottom:3px}
+.tab.active .tab-num{color:var(--white)}
+.tab-lbl{font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.2px}
+.tab.active .tab-lbl{color:rgba(255,255,255,.88)}
+.tab-icon{font-size:14px;margin-bottom:2px}
+.list{padding:10px 14px 100px;display:flex;flex-direction:column;gap:10px}
+.empty{text-align:center;padding:54px 20px;color:var(--text3)}
+.empty .ico{font-size:50px;margin-bottom:13px}
+.empty p{font-size:14px;font-weight:500;line-height:1.6}
+.card{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);padding:13px 13px 13px 17px;display:flex;align-items:flex-start;gap:11px;position:relative;overflow:hidden;box-shadow:var(--sh);animation:up .2s ease}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card.urgent{border-color:#F4BACB;background:#FFF8FB}
+.card.soon{border-color:#FFE8A3;background:#FFFEF5}
+.card.ok{border-color:#B3E5D0;background:#F5FFFA}
+.card.done-card{border-color:var(--border);background:#FAFCFE;opacity:.75}
+.card::before{content:'';position:absolute;right:0;top:0;bottom:0;width:4px;border-radius:0 var(--r) var(--r) 0}
+.card.urgent::before{background:linear-gradient(180deg,var(--rose),#E57373)}
+.card.soon::before{background:linear-gradient(180deg,#FFD54F,#F39C12)}
+.card.ok::before{background:linear-gradient(180deg,#7EE8B0,#27AE60)}
+.card.done-card::before{background:linear-gradient(180deg,var(--sky-l),var(--sky-d))}
+.card[data-sub="שפה"] .subj{background:#D6EAF8;color:#1A5276}
+.card[data-sub="חשבון"] .subj{background:#D5F5E3;color:#1D6A39}
+.card[data-sub="גיאומטריה"] .subj{background:#E8DAEF;color:#6C3483}
+.card[data-sub="אנגלית"] .subj{background:#FDEBD0;color:#9C4A0E}
+.card[data-sub="מדעים"] .subj{background:#D1F2EB;color:#0E6655}
+.card[data-sub='תנ"ך'] .subj{background:#FDEDEC;color:#922B21}
+.card[data-sub="היסטוריה"] .subj{background:#FEF9E7;color:#9A7D0A}
+.card[data-sub="ערבית"] .subj{background:#EBF5FB;color:#1F618D}
+.chk{width:24px;height:24px;border:2px solid var(--border);border-radius:7px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;transition:all .18s;margin-top:1px}
+.chk:active{transform:scale(.85)}
+.chk.on{background:var(--rose);border-color:var(--rose-d)}
+.chk.on::after{content:'✓';color:#fff;font-size:13px;font-weight:800}
+.chk.done-chk{background:var(--sky-l);border-color:var(--sky-d)}
+.chk.done-chk::after{content:'✓';color:var(--sky-dd);font-size:13px;font-weight:800}
+.body{flex:1;min-width:0}
+.top{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap}
+.subj{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
+.plat-icon{font-size:14px}
+.plat-name{font-size:11px;color:var(--text3);font-weight:500}
+.gcal-badge{font-size:10px;color:#27AE60;background:#E8F5E9;padding:2px 6px;border-radius:10px;border:1px solid #A5D6A7}
+.desc{font-size:14px;font-weight:500;color:var(--text);margin-bottom:6px;line-height:1.45;word-break:break-word}
+.desc.nil{color:var(--text3);font-style:italic}
+.meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.due{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:7px}
+.due.urgent{background:#FDECEA;color:#C0392B;border:1px solid #F4BACB}
+.due.soon{background:#FEF9E7;color:#9A7D0A;border:1px solid #FFE8A3}
+.due.ok{background:#EAFAF1;color:#1E8449;border:1px solid #B3E5D0}
+.due.none{background:var(--sky-ll);color:var(--text2);border:1px solid var(--border)}
+.rem{font-size:11px;color:var(--text3)}
+.acts{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.ibtn{background:none;border:none;cursor:pointer;font-size:17px;padding:4px;border-radius:8px;transition:background .13s;line-height:1}
+.ibtn:active{background:var(--sky-ll)}
+.day-strip{display:flex;gap:6px;padding:6px 14px 10px;overflow-x:auto;scrollbar-width:none}
+.day-strip::-webkit-scrollbar{display:none}
+.day-pill{flex-shrink:0;background:var(--white);border:2px solid var(--border);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .16s;white-space:nowrap}
+.day-pill.active{background:linear-gradient(135deg,var(--sky),var(--rose));border-color:transparent;color:#fff;box-shadow:0 3px 12px rgba(91,175,207,.3)}
+.ovl{position:fixed;inset:0;background:rgba(30,45,61,.4);z-index:200;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .22s}
+.ovl.on{opacity:1;pointer-events:all}
+.sheet{background:#fff;border-radius:24px 24px 0 0;width:100%;max-height:93vh;overflow-y:auto;padding:0 0 36px;transform:translateY(100%);transition:transform .28s cubic-bezier(.34,1.56,.64,1)}
+.ovl.on .sheet{transform:translateY(0)}
+.pull{width:38px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
+.s-hdr{padding:16px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.s-title{font-size:19px;font-weight:800}
+.s-cls{background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.s-body{padding:16px 18px 0}
+.fg{margin-bottom:16px}
+.flbl{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+select,textarea{width:100%;border:2px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;font-family:var(--font);font-size:15px;color:var(--text);background:#fff;outline:none;transition:border-color .15s;-webkit-appearance:none;appearance:none;direction:rtl}
+select:focus,textarea:focus{border-color:var(--sky-d)}
+textarea{resize:none;height:78px;line-height:1.5}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A7184' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 13px center;padding-left:34px}
+.dd{width:100%;border:2px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:var(--font);font-size:15px;color:var(--text)}
+.dd .ph{color:var(--text3)}
+.cal-pop{display:none;background:#fff;border:2px solid var(--border);border-radius:var(--r);padding:14px;margin-top:7px;box-shadow:var(--sh-lg)}
+.cal-pop.on{display:block}
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-nav{background:var(--bg);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:var(--text2)}
+.cal-my{font-size:14px;font-weight:700}
+.cal-wd{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:4px}
+.cal-w{font-size:10px;font-weight:700;color:var(--text3);padding:3px 0}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;border-radius:50%;cursor:pointer;transition:all .13s;color:var(--text)}
+.d:hover:not(.past):not(.emp){background:var(--sky-ll)}
+.d.today{font-weight:800;color:var(--sky-dd)}
+.d.sel{background:var(--sky-d);color:#fff}
+.d.past{color:var(--text3);cursor:default}
+.d.emp{cursor:default}
+.t-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.t-row select{flex:1}
+.t-sep{font-size:17px;font-weight:700;color:var(--text2)}
+.plat-preview{display:flex;align-items:center;gap:8px;margin-top:7px;padding:8px 12px;background:var(--sky-ll);border-radius:var(--r-sm);border:1.5px solid var(--border);font-size:13px;color:var(--text2)}
+.gcal-info{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--r-sm);font-size:12px;margin-bottom:12px}
+.gcal-info.ok{background:#F0FFF4;border:1.5px solid #A5D6A7;color:#1E6E3A}
+.gcal-info.warn{background:#FFF8F0;border:1.5px solid #F39C12;color:#8B5E00}
+.save-btn{width:100%;background:linear-gradient(135deg,var(--sky-d),var(--rose-d));color:#fff;border:none;border-radius:var(--r-sm);padding:14px;font-family:var(--font);font-size:16px;font-weight:800;cursor:pointer;margin-top:6px;box-shadow:0 4px 18px rgba(91,175,207,.35);transition:transform .13s,opacity .13s}
+.save-btn:active{transform:scale(.97);opacity:.9}
+.save-btn:disabled{opacity:.5;cursor:not-allowed}
+.dlg-ovl{position:fixed;inset:0;background:rgba(30,45,61,.42);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .18s}
+.dlg-ovl.on{opacity:1;pointer-events:all}
+.dlg{background:#fff;border-radius:var(--r);padding:26px 22px;max-width:310px;width:100%;text-align:center;transform:scale(.88);transition:transform .22s cubic-bezier(.34,1.56,.64,1);box-shadow:0 20px 60px rgba(0,0,0,.13)}
+.dlg-ovl.on .dlg{transform:scale(1)}
+.dlg-ico{font-size:42px;margin-bottom:12px}
+.dlg-t{font-size:17px;font-weight:800;margin-bottom:7px}
+.dlg-b{font-size:14px;color:var(--text2);margin-bottom:22px;line-height:1.5}
+.dlg-btns{display:flex;gap:9px}
+.btn{flex:1;padding:12px;border-radius:var(--r-sm);border:none;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:transform .13s}
+.btn:active{transform:scale(.95)}
+.btn.grey{background:var(--bg);color:var(--text2)}
+.btn.pink{background:linear-gradient(135deg,var(--rose),#E57373);color:#fff}
+.btn.blue{background:linear-gradient(135deg,var(--sky-d),var(--sky-dd));color:#fff}
+.snz-ovl{position:fixed;inset:0;background:rgba(30,45,61,.42);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .18s}
+.snz-ovl.on{opacity:1;pointer-events:all}
+.snz-box{background:#fff;border-radius:var(--r);padding:24px 20px;max-width:330px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.13);transform:scale(.88);transition:transform .22s cubic-bezier(.34,1.56,.64,1)}
+.snz-ovl.on .snz-box{transform:scale(1)}
+.toast{position:fixed;top:0;left:0;right:0;z-index:500;background:linear-gradient(135deg,var(--sky-dd),var(--rose-d));color:#fff;padding:14px 16px 15px;text-align:center;transform:translateY(-110%);transition:transform .28s;border-radius:0 0 16px 16px;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.toast.on{transform:translateY(0)}
+.toast-t{font-size:15px;font-weight:800;margin-bottom:3px}
+.toast-b{font-size:13px;opacity:.88}
+.toast-snz{margin-top:9px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <div class="hdr-title">📚 שיעורי הבית שלי</div>
+      <div class="hdr-sub" id="hSub"></div>
+    </div>
+    <button class="add-btn" onclick="openAdd()">+</button>
+  </div>
+</div>
+
+<div class="gcal-bar off" id="gcalBar">
+  <div class="gcal-dot"></div>
+  <span id="gcalMsg">בודק חיבור ליומן...</span>
+  <button class="gcal-btn" id="gcalBtn" style="display:none"></button>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="setFilter('all')" id="tabAll"><div class="tab-icon">📋</div><div class="tab-num" id="sTotal">0</div><div class="tab-lbl">הכל</div></div>
+  <div class="tab" onclick="setFilter('urgent')" id="tabUrgent"><div class="tab-icon">🔥</div><div class="tab-num" id="sUrgent">0</div><div class="tab-lbl">דחוף</div></div>
+  <div class="tab" onclick="setFilter('week')" id="tabWeek"><div class="tab-icon">📅</div><div class="tab-num" id="sWeek">0</div><div class="tab-lbl">השבוע</div></div>
+  <div class="tab" onclick="setFilter('done')" id="tabDone"><div class="tab-icon">✅</div><div class="tab-num" id="sDone">0</div><div class="tab-lbl">סיימתי</div></div>
+</div>
+
+<div class="day-strip" id="dayStrip" style="display:none"></div>
+<div class="list" id="list"></div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="ovl" id="modalOvl" onclick="ovlClick(event)">
+  <div class="sheet">
+    <div class="pull"></div>
+    <div class="s-hdr">
+      <div class="s-title" id="modalTitle">שיעור בית חדש</div>
+      <button class="s-cls" onclick="closeModal()">✕</button>
+    </div>
+    <div class="s-body">
+      <div class="gcal-info warn" id="gcalInfoBox" style="display:none"></div>
+      <div class="fg"><div class="flbl">מקצוע</div>
+        <select id="fSub">
+          <option value="">- בחרי מקצוע -</option>
+          <option>שפה</option><option>חשבון</option><option>גיאומטריה</option>
+          <option>אנגלית</option><option>מדעים</option><option>תנ"ך</option>
+          <option>היסטוריה</option><option>ערבית</option>
+        </select>
+      </div>
+      <div class="fg"><div class="flbl">איפה עושים?</div>
+        <select id="fPlat" onchange="platPrev()">
+          <option value="">- בחרי פלטפורמה -</option>
+          <option>אתר אופק</option><option>אתר גלים</option><option>גוגל קלאסרום</option>
+          <option>ספר</option><option>חוברת</option><option>מחברת</option><option>דף עבודה</option>
+        </select>
+        <div class="plat-preview" id="platPrev" style="display:none"></div>
+      </div>
+      <div class="fg"><div class="flbl">תיאור המשימה</div>
+        <textarea id="fDesc" placeholder="עמודים, נושא, שם דף העבודה..."></textarea>
+      </div>
+      <div class="fg"><div class="flbl">📅 מועד הגשה</div>
+        <div class="dd" onclick="togCal('due')"><span id="dueTxt" class="ph">בחרי תאריך</span><span>📅</span></div>
+        <div class="cal-pop" id="dueCal"></div>
+      </div>
+      <div class="fg"><div class="flbl">🔔 תזכורת ביצוע (אופציונלי)</div>
+        <div class="dd" onclick="togCal('rem')"><span id="remTxt" class="ph">בחרי תאריך</span><span>🔔</span></div>
+        <div class="cal-pop" id="remCal"></div>
+        <div class="t-row">
+          <span style="font-size:13px;color:var(--text2);flex-shrink:0">שעה:</span>
+          <select id="remH" style="flex:1"><option value="">שעה</option></select>
+          <span class="t-sep">:</span>
+          <select id="remM" style="flex:1">
+            <option value="">דקות</option><option value="00">00</option>
+            <option value="15">15</option><option value="30">30</option><option value="45">45</option>
+          </select>
+        </div>
+      </div>
+      <button class="save-btn" id="saveBtn" onclick="saveTask()">שמרי משימה ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="dlg-ovl" id="delOvl">
+  <div class="dlg">
+    <div class="dlg-ico">🌟</div>
+    <div class="dlg-t">כל הכבוד!</div>
+    <div class="dlg-b">סיימת את המשימה?<br>למחוק אותה מהרשימה?</div>
+    <div class="dlg-btns">
+      <button class="btn grey" onclick="closeDelDlg()">עוד לא</button>
+      <button class="btn pink" onclick="doDel()">מחקי!</button>
+    </div>
+  </div>
+</div>
+
+<!-- SNOOZE -->
+<div class="snz-ovl" id="snzOvl">
+  <div class="snz-box">
+    <div class="dlg-t" style="text-align:right;margin-bottom:6px">🔔 דחיית תזכורת</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:18px" id="snzName"></div>
+    <div class="fg"><div class="flbl">תאריך חדש</div>
+      <div class="dd" onclick="togCal('snz')"><span id="snzTxt" class="ph">בחרי תאריך</span><span>📅</span></div>
+      <div class="cal-pop" id="snzCal"></div>
+      <div class="t-row">
+        <span style="font-size:13px;color:var(--text2);flex-shrink:0">שעה:</span>
+        <select id="snzH" style="flex:1"></select>
+        <span class="t-sep">:</span>
+        <select id="snzM" style="flex:1">
+          <option value="00">00</option><option value="15">15</option>
+          <option value="30">30</option><option value="45">45</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:8px">
+      <button class="btn grey" style="flex:1" onclick="closeSnz()">ביטול</button>
+      <button class="btn blue" style="flex:1" onclick="saveSnz()">שמרי</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <div class="toast-t" id="toastT"></div>
+  <div class="toast-b" id="toastB"></div>
+  <button class="toast-snz" onclick="openSnzFromToast()">דחי תזכורת</button>
+</div>
+
+<script>
+var CLIENT_ID      = '10963602013-d8qti4amctuimsuo5jevvgkirtdi5bds.apps.googleusercontent.com';
+var DAUGHTER_EMAIL = '070714yl@gmail.com';
+var REDIRECT_URI   = 'https://my-homework-organizer.netlify.app/api/callback';
+var GCAL_API       = 'https://www.googleapis.com/calendar/v3';
+var SCOPES         = 'https://www.googleapis.com/auth/calendar.events';
+
+var tasks     = JSON.parse(localStorage.getItem('hw_tasks')     || '[]');
+var completed = JSON.parse(localStorage.getItem('hw_completed') || '[]');
+
+var gcalToken   = null;  // current access token (from server)
+var gcalReady   = false;
+
+var editId = null, delId = null, snzId = null, toastTaskId = null;
+var currentFilter = 'all', selectedDoneDay = null, checker = null;
+var cal = { due:{y:0,m:0,sel:null}, rem:{y:0,m:0,sel:null}, snz:{y:0,m:0,sel:null} };
+
+var MO=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+var WD=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+var DN=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+
+// ── INIT ──
+function init() {
+  fillHours();
+  subtitle();
+  registerSW();
+  selectedDoneDay = toDS(new Date());
+  checkAuthCallback();
+  checkGcalStatus();
+  render();
+  startChecker();
+  pruneOldCompleted();
+}
+
+function fillHours() {
+  ['remH','snzH'].forEach(function(id) {
+    var s=document.getElementById(id);
+    s.innerHTML='<option value="">שעה</option>';
+    for(var h=6;h<=23;h++) s.innerHTML+='<option value="'+p2(h)+'">'+p2(h)+'</option>';
+  });
+}
+function subtitle() {
+  var d=new Date();
+  document.getElementById('hSub').textContent='יום '+DN[d.getDay()]+', '+d.getDate()+' ב'+MO[d.getMonth()];
+}
+function pruneOldCompleted() {
+  var c=Date.now()-14*86400000;
+  completed=completed.filter(function(x){return new Date(x.doneAt).getTime()>c;});
+  saveCompleted();
+}
+
+// ── AUTH CALLBACK CHECK ──
+function checkAuthCallback() {
+  var params = new URLSearchParams(window.location.search);
+  var auth = params.get('auth');
+  if (auth === 'success') {
+    window.history.replaceState({}, '', '/');
+    showToast('✅ יומן גוגל חובר בהצלחה!', 'התזכורות ישלחו אוטומטית', null);
+  } else if (auth === 'error') {
+    window.history.replaceState({}, '', '/');
+    alert('שגיאה בחיבור ליומן גוגל. נסי שוב.');
+  }
+}
+
+// ── GCAL STATUS ──
+function checkGcalStatus() {
+  setGcalBar('loading', 'בודק חיבור...', null, null);
+  fetch('/api/token')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.access_token) {
+        // Check if token still valid
+        if (data.expiry && Date.now() < data.expiry - 60000) {
+          gcalToken = data.access_token;
+          gcalReady = true;
+          setGcalBar('on', '✓ יומן גוגל מחובר', 'התנתקי', gcalDisconnect);
+        } else {
+          // Try refresh
+          refreshToken();
+        }
+      } else {
+        setGcalBar('off', 'יומן גוגל לא מחובר', 'התחברי', gcalConnect);
+      }
+    })
+    .catch(function() {
+      setGcalBar('off', 'יומן גוגל לא מחובר', 'התחברי', gcalConnect);
+    });
+}
+
+function refreshToken() {
+  fetch('/api/refresh', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.access_token) {
+        gcalToken = data.access_token;
+        gcalReady = true;
+        setGcalBar('on', '✓ יומן גוגל מחובר', 'התנתקי', gcalDisconnect);
+      } else {
+        gcalReady = false;
+        setGcalBar('off', 'יומן גוגל לא מחובר', 'התחברי', gcalConnect);
+      }
+    })
+    .catch(function() {
+      setGcalBar('off', 'יומן גוגל לא מחובר', 'התחברי', gcalConnect);
+    });
+}
+
+function setGcalBar(state, msg, btnTxt, btnFn) {
+  var bar=document.getElementById('gcalBar');
+  var msgEl=document.getElementById('gcalMsg');
+  var btn=document.getElementById('gcalBtn');
+  bar.className='gcal-bar '+state;
+  msgEl.textContent=msg;
+  if (btnTxt) {
+    btn.style.display='block';
+    btn.textContent=btnTxt;
+    btn.onclick=btnFn;
+  } else {
+    btn.style.display='none';
+  }
+}
+
+function gcalConnect() {
+  // Redirect to Google OAuth
+  var url = 'https://accounts.google.com/o/oauth2/v2/auth?' +
+    'client_id=' + encodeURIComponent(CLIENT_ID) +
+    '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) +
+    '&response_type=code' +
+    '&scope=' + encodeURIComponent(SCOPES) +
+    '&access_type=offline' +
+    '&prompt=consent';
+  window.location.href = url;
+}
+
+function gcalDisconnect() {
+  fetch('/api/token', { method: 'DELETE' })
+    .then(function() {
+      gcalToken = null; gcalReady = false;
+      setGcalBar('off', 'יומן גוגל לא מחובר', 'התחברי', gcalConnect);
+    });
+}
+
+// ── GCAL API CALLS ──
+function gcalCreateEvents(task) {
+  if (!gcalReady || !gcalToken || !task.dueDate) return;
+  var title = task.subject + (task.desc ? ': ' + task.desc : '');
+
+  var due = new Date(task.dueDate);
+  var remDay = new Date(due.getFullYear(), due.getMonth(), due.getDate()-1);
+  var remDateStr = toDS(remDay);
+
+  var events = [
+    // Due date event
+    {
+      summary: '📚 הגשה: ' + title,
+      description: (task.platform||'') + (task.desc ? '\n'+task.desc : ''),
+      start: { date: task.dueDate },
+      end:   { date: task.dueDate },
+      attendees: [{ email: DAUGHTER_EMAIL }],
+      reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 60 }, { method: 'email', minutes: 60 }] }
+    },
+    // Auto reminder: day before 14:30
+    {
+      summary: '⏰ מחר מגישים: ' + title,
+      description: 'תזכורת - יש להגיש מחר!\n' + (task.desc||''),
+      start: { dateTime: remDateStr+'T14:30:00', timeZone: 'Asia/Jerusalem' },
+      end:   { dateTime: remDateStr+'T14:45:00', timeZone: 'Asia/Jerusalem' },
+      attendees: [{ email: DAUGHTER_EMAIL }],
+      reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 0 }, { method: 'email', minutes: 0 }] }
+    }
+  ];
+
+  // Manual reminder
+  if (task.reminderDate && task.reminderTime) {
+    var pts=task.reminderTime.split(':');
+    var eh=parseInt(pts[0]), em=parseInt(pts[1])+15;
+    if(em>=60){eh++;em-=60;}
+    events.push({
+      summary: '🔔 תזכורת שיעורי בית: ' + title,
+      description: task.desc||'',
+      start: { dateTime: task.reminderDate+'T'+task.reminderTime+':00', timeZone: 'Asia/Jerusalem' },
+      end:   { dateTime: task.reminderDate+'T'+p2(eh)+':'+p2(em)+':00', timeZone: 'Asia/Jerusalem' },
+      attendees: [{ email: DAUGHTER_EMAIL }],
+      reminders: { useDefault: false, overrides: [{ method: 'popup', minutes: 0 }, { method: 'email', minutes: 0 }] }
+    });
+  }
+
+  var ids = [];
+  function next(i) {
+    if (i >= events.length) {
+      tasks = tasks.map(function(t){ return t.id===task.id ? Object.assign({},t,{gcalEventIds:ids}) : t; });
+      saveTasks(); render(); return;
+    }
+    fetch(GCAL_API+'/calendars/primary/events', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer '+gcalToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify(events[i])
+    })
+    .then(function(r){return r.json();})
+    .then(function(d){ if(d.id) ids.push(d.id); next(i+1); })
+    .catch(function(){ next(i+1); });
+  }
+  next(0);
+}
+
+function gcalDeleteEvents(task) {
+  if (!gcalReady || !gcalToken || !task.gcalEventIds || !task.gcalEventIds.length) return;
+  task.gcalEventIds.forEach(function(eid) {
+    fetch(GCAL_API+'/calendars/primary/events/'+eid, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer '+gcalToken }
+    }).catch(function(){});
+  });
+}
+
+// ── SERVICE WORKER ──
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('/sw.js',{scope:'/'})
+    .then(function(r){console.log('SW ok',r.scope);})
+    .catch(function(e){console.warn('SW err',e);});
+  navigator.serviceWorker.addEventListener('message', function(e) {
+    if(e.data&&e.data.type==='SNOOZE'){toastTaskId=e.data.taskId;openSnzFromToast();}
+  });
+}
+
+// ── IN-APP NOTIFICATIONS ──
+function startChecker(){if(checker)clearInterval(checker);checker=setInterval(checkAlerts,30000);checkAlerts();}
+function checkAlerts(){
+  var now=new Date();
+  var nk=now.getFullYear()+'-'+p2(now.getMonth()+1)+'-'+p2(now.getDate())+' '+p2(now.getHours())+':'+p2(now.getMinutes());
+  tasks.forEach(function(t){
+    if(t.done) return;
+    if(t.dueDate){
+      var due=new Date(t.dueDate),ar=new Date(due.getFullYear(),due.getMonth(),due.getDate()-1,14,30);
+      var ak=ar.getFullYear()+'-'+p2(ar.getMonth()+1)+'-'+p2(ar.getDate())+' 14:30';
+      var sk='ar_'+t.id;
+      if(nk===ak&&!localStorage.getItem(sk)){localStorage.setItem(sk,'1');showToast('⏰ מחר מגישים: '+t.subject,t.desc||'אל תשכחי!',t.id);}
+    }
+    if(t.reminderDate&&t.reminderTime){
+      var rd=new Date(t.reminderDate),pts=t.reminderTime.split(':');
+      var rt=new Date(rd.getFullYear(),rd.getMonth(),rd.getDate(),parseInt(pts[0]),parseInt(pts[1]));
+      var rk=rt.getFullYear()+'-'+p2(rt.getMonth()+1)+'-'+p2(rt.getDate())+' '+p2(rt.getHours())+':'+p2(rt.getMinutes());
+      var mk='mr_'+t.id+'_'+t.reminderDate+'_'+t.reminderTime;
+      if(nk===rk&&!localStorage.getItem(mk)){localStorage.setItem(mk,'1');showToast('🔔 תזכורת: '+t.subject,t.desc||'הגיע הזמן!',t.id);}
+    }
+  });
+}
+function showToast(title,body,taskId){
+  toastTaskId=taskId;
+  document.getElementById('toastT').textContent=title;
+  document.getElementById('toastB').textContent=body;
+  var el=document.getElementById('toast');el.classList.add('on');
+  setTimeout(function(){el.classList.remove('on');},10000);
+}
+
+// ── FILTER / RENDER ──
+function setFilter(f){
+  currentFilter=f;
+  ['all','urgent','week','done'].forEach(function(x){
+    document.getElementById('tab'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('active',x===f);
+  });
+  document.getElementById('dayStrip').style.display=(f==='done')?'flex':'none';
+  if(f==='done') buildDayStrip();
+  render();
+}
+function buildDayStrip(){
+  var today=new Date(),dow=today.getDay();
+  var sun=new Date(today);sun.setDate(today.getDate()-dow);sun.setHours(0,0,0,0);
+  var strip=document.getElementById('dayStrip');strip.innerHTML='';
+  for(var i=0;i<7;i++){
+    var d=new Date(sun);d.setDate(sun.getDate()+i);
+    var ds=toDS(d),isT=ds===toDS(today),isFut=d>today;
+    var cnt=completed.filter(function(c){return toDS(new Date(c.doneAt))===ds;}).length;
+    var pill=document.createElement('div');
+    pill.className='day-pill'+(isT?' today-pill':'')+(ds===selectedDoneDay?' active':'');
+    pill.innerHTML=WD[d.getDay()]+(isT?' היום':'')+(cnt?' ('+cnt+')':'');
+    if(!isFut||isT){(function(ds2){pill.onclick=function(){selectedDoneDay=ds2;buildDayStrip();render();};})(ds);}
+    else{pill.style.opacity='.4';pill.style.cursor='default';}
+    strip.appendChild(pill);
+  }
+}
+function render(){
+  var list=document.getElementById('list');
+  var today=new Date();today.setHours(0,0,0,0);
+  var weekEnd=new Date(today.getTime()+7*86400000);
+  var active=tasks.filter(function(t){return !t.done;});
+  var urgCnt=active.filter(function(t){return t.dueDate&&(new Date(t.dueDate)-today)/86400000<=2;}).length;
+  var wkCnt=active.filter(function(t){if(!t.dueDate)return false;var d=new Date(t.dueDate);return d>=today&&d<=weekEnd;}).length;
+  var doneCnt=completed.filter(function(c){return toDS(new Date(c.doneAt))===toDS(new Date());}).length;
+  document.getElementById('sTotal').textContent=active.length;
+  document.getElementById('sUrgent').textContent=urgCnt;
+  document.getElementById('sWeek').textContent=wkCnt;
+  document.getElementById('sDone').textContent=doneCnt;
+
+  if(currentFilter==='done'){
+    var dc=completed.filter(function(c){return toDS(new Date(c.doneAt))===selectedDoneDay;});
+    if(!dc.length){list.innerHTML='<div class="empty"><div class="ico">✅</div><p>אין משימות שהושלמו '+(selectedDoneDay===toDS(new Date())?'היום':fmtD(selectedDoneDay))+'</p></div>';return;}
+    list.innerHTML='';dc.forEach(function(c){list.appendChild(makeDoneCard(c));});return;
+  }
+  var items;
+  if(currentFilter==='urgent') items=active.filter(function(t){return t.dueDate&&(new Date(t.dueDate)-today)/86400000<=2;});
+  else if(currentFilter==='week') items=active.filter(function(t){if(!t.dueDate)return false;var d=new Date(t.dueDate);return d>=today&&d<=weekEnd;});
+  else items=active;
+  items=items.slice().sort(function(a,b){if(!a.dueDate)return 1;if(!b.dueDate)return -1;return new Date(a.dueDate)-new Date(b.dueDate);});
+  if(!items.length){
+    var msgs={all:'אין שיעורי בית כרגע!<br>לחצי על + להוספה',urgent:'אין משימות דחופות 🎉',week:'אין משימות השבוע 🎉'};
+    list.innerHTML='<div class="empty"><div class="ico">🎒</div><p>'+(msgs[currentFilter]||'')+'</p></div>';return;
+  }
+  list.innerHTML='';items.forEach(function(t){list.appendChild(makeCard(t));});
+}
+function makeCard(t){
+  var card=document.createElement('div');
+  var urg=urgCls(t.dueDate);
+  card.className='card '+urg;card.dataset.sub=t.subject||'';
+  var icon=platIcon(t.platform);
+  var rem=(t.reminderDate&&t.reminderTime)?'🔔 '+fmtD(t.reminderDate)+' '+t.reminderTime:'';
+  var gcalBadge=t.gcalEventIds&&t.gcalEventIds.length?'<span class="gcal-badge">📅 ביומן</span>':'';
+  card.innerHTML='<div class="chk" onclick="chkClick(\''+t.id+'\')"></div>'+
+    '<div class="body"><div class="top">'+
+    (t.subject?'<span class="subj">'+t.subject+'</span>':'')+
+    (icon?'<span class="plat-icon">'+icon+'</span>':'')+
+    (t.platform?'<span class="plat-name">'+t.platform+'</span>':'')+
+    gcalBadge+'</div>'+
+    '<div class="desc'+(t.desc?'':' nil')+'">'+(t.desc||'אין תיאור')+'</div>'+
+    '<div class="meta">'+dueBadge(t.dueDate,urg)+(rem?'<span class="rem">'+rem+'</span>':'')+'</div></div>'+
+    '<div class="acts"><button class="ibtn" onclick="openEdit(\''+t.id+'\')">✏️</button>'+
+    '<button class="ibtn" onclick="openDelDlg(\''+t.id+'\')">🗑️</button></div>';
+  return card;
+}
+function makeDoneCard(c){
+  var card=document.createElement('div');
+  card.className='card done-card';card.dataset.sub=c.subject||'';
+  var icon=platIcon(c.platform);
+  var dt=new Date(c.doneAt),ts=p2(dt.getHours())+':'+p2(dt.getMinutes());
+  card.innerHTML='<div class="chk done-chk"></div>'+
+    '<div class="body"><div class="top">'+
+    (c.subject?'<span class="subj">'+c.subject+'</span>':'')+
+    (icon?'<span class="plat-icon">'+icon+'</span>':'')+
+    (c.platform?'<span class="plat-name">'+c.platform+'</span>':'')+
+    '</div><div class="desc'+(c.desc?'':' nil')+'">'+(c.desc||'אין תיאור')+'</div>'+
+    '<div class="meta">'+(c.dueDate?'<span class="due ok">📅 הוגש '+fmtD(c.dueDate)+'</span>':'')+
+    '<span class="rem">✅ הושלם ב-'+ts+'</span></div></div>';
+  return card;
+}
+function platIcon(p){if(['אתר אופק','אתר גלים','גוגל קלאסרום'].indexOf(p)>=0)return '💻';if(['ספר','חוברת','מחברת','דף עבודה'].indexOf(p)>=0)return '✏️';return '';}
+function urgCls(dd){if(!dd)return 'none';var t=new Date();t.setHours(0,0,0,0);var d=(new Date(dd)-t)/86400000;return d<=1?'urgent':d<=3?'soon':'ok';}
+function dueBadge(dd,urg){if(!dd)return '';var l={urgent:' - דחוף!',soon:' - בקרוב',ok:'',none:''}[urg]||'';return '<span class="due '+urg+'">📅 '+fmtD(dd)+l+'</span>';}
+function fmtD(s){if(!s)return '';var d=new Date(s);return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();}
+function p2(n){return String(n).padStart(2,'0');}
+function toDS(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
+
+// ── MODAL ──
+function openAdd(){
+  editId=null;
+  document.getElementById('modalTitle').textContent='שיעור בית חדש';
+  document.getElementById('saveBtn').textContent='שמרי משימה ✓';
+  resetForm();showGcalInfo();
+  document.getElementById('modalOvl').classList.add('on');
+}
+function openEdit(id){
+  var t=tasks.find(function(x){return x.id===id;});if(!t)return;
+  editId=id;
+  document.getElementById('modalTitle').textContent='עריכת משימה';
+  document.getElementById('saveBtn').textContent='עדכני ✓';
+  document.getElementById('fSub').value=t.subject||'';
+  document.getElementById('fPlat').value=t.platform||'';
+  document.getElementById('fDesc').value=t.desc||'';
+  platPrev();showGcalInfo();
+  if(t.dueDate){var d=new Date(t.dueDate);cal.due.sel=t.dueDate;cal.due.y=d.getFullYear();cal.due.m=d.getMonth();setTxt('dueTxt',fmtD(t.dueDate),false);}
+  if(t.reminderDate){var r=new Date(t.reminderDate);cal.rem.sel=t.reminderDate;cal.rem.y=r.getFullYear();cal.rem.m=r.getMonth();setTxt('remTxt',fmtD(t.reminderDate),false);}
+  if(t.reminderTime){var pts=t.reminderTime.split(':');document.getElementById('remH').value=pts[0];document.getElementById('remM').value=pts[1];}
+  document.getElementById('modalOvl').classList.add('on');
+}
+function showGcalInfo(){
+  var box=document.getElementById('gcalInfoBox');
+  if(gcalReady){box.className='gcal-info ok';box.textContent='📅 המשימה תתווסף ליומן גוגל עם תזכורות';}
+  else{box.className='gcal-info warn';box.textContent='⚠️ יומן גוגל לא מחובר - חברי מהמחשב';}
+  box.style.display='flex';
+}
+function closeModal(){document.getElementById('modalOvl').classList.remove('on');closeCals();}
+function ovlClick(e){if(e.target===document.getElementById('modalOvl'))closeModal();}
+function resetForm(){
+  document.getElementById('fSub').value='';document.getElementById('fPlat').value='';document.getElementById('fDesc').value='';
+  setTxt('dueTxt','בחרי תאריך',true);setTxt('remTxt','בחרי תאריך',true);
+  document.getElementById('remH').value='';document.getElementById('remM').value='';
+  document.getElementById('platPrev').style.display='none';
+  cal.due.sel=null;cal.rem.sel=null;
+  var n=new Date();cal.due.y=cal.rem.y=n.getFullYear();cal.due.m=cal.rem.m=n.getMonth();
+  closeCals();
+}
+function setTxt(id,txt,isPh){var el=document.getElementById(id);el.textContent=txt;el.className=isPh?'ph':'';}
+function platPrev(){
+  var val=document.getElementById('fPlat').value,el=document.getElementById('platPrev');
+  if(!val){el.style.display='none';return;}
+  el.style.display='flex';
+  el.innerHTML='<span style="font-size:17px">'+(platIcon(val)||'📋')+'</span><span>'+val+'</span>';
+}
+function saveTask(){
+  var sub=document.getElementById('fSub').value;
+  if(!sub){alert('יש לבחור מקצוע');return;}
+  var h=document.getElementById('remH').value,m=document.getElementById('remM').value;
+  var rTime=(h&&m)?h+':'+m:h?h+':00':null;
+  var existing=editId?tasks.find(function(t){return t.id===editId;}):null;
+  var btn=document.getElementById('saveBtn');
+  btn.disabled=true;btn.textContent='שומר...';
+  var task={
+    id:editId||Date.now().toString(),subject:sub,
+    platform:document.getElementById('fPlat').value,
+    desc:document.getElementById('fDesc').value.trim(),
+    dueDate:cal.due.sel||null,reminderDate:cal.rem.sel||null,reminderTime:rTime,
+    done:false,gcalEventIds:existing?(existing.gcalEventIds||[]):[],
+    createdAt:existing?existing.createdAt:Date.now()
+  };
+  if(editId&&existing&&existing.gcalEventIds&&existing.gcalEventIds.length){gcalDeleteEvents(existing);task.gcalEventIds=[];}
+  if(editId){tasks=tasks.map(function(t){return t.id===editId?task:t;});}else{tasks.push(task);}
+  saveTasks();
+  if(gcalReady&&task.dueDate) gcalCreateEvents(task);
+  btn.disabled=false;closeModal();render();
+}
+
+// ── DELETE ──
+function chkClick(id){delId=id;document.getElementById('delOvl').classList.add('on');}
+function openDelDlg(id){delId=id;document.getElementById('delOvl').classList.add('on');}
+function closeDelDlg(){delId=null;document.getElementById('delOvl').classList.remove('on');}
+function doDel(){
+  var t=tasks.find(function(x){return x.id===delId;});
+  if(t){
+    gcalDeleteEvents(t);
+    completed.push({id:t.id,subject:t.subject,platform:t.platform,desc:t.desc,dueDate:t.dueDate,doneAt:new Date().toISOString()});
+    saveCompleted();
+  }
+  tasks=tasks.filter(function(x){return x.id!==delId;});
+  saveTasks();document.getElementById('delOvl').classList.remove('on');delId=null;render();
+  if(currentFilter==='done')buildDayStrip();
+}
+
+// ── SNOOZE ──
+function openSnzFromToast(){
+  document.getElementById('toast').classList.remove('on');snzId=toastTaskId;
+  var t=tasks.find(function(x){return x.id===snzId;});
+  document.getElementById('snzName').textContent=t?t.subject+(t.desc?': '+t.desc:''):'';
+  cal.snz.sel=null;var n=new Date();cal.snz.y=n.getFullYear();cal.snz.m=n.getMonth();
+  setTxt('snzTxt','בחרי תאריך',true);
+  document.getElementById('snzH').value='15';document.getElementById('snzM').value='00';
+  document.getElementById('snzCal').classList.remove('on');
+  document.getElementById('snzOvl').classList.add('on');
+}
+function closeSnz(){document.getElementById('snzOvl').classList.remove('on');document.getElementById('snzCal').classList.remove('on');}
+function saveSnz(){
+  if(!cal.snz.sel){alert('בחרי תאריך');return;}
+  var h=document.getElementById('snzH').value||'15',m=document.getElementById('snzM').value||'00';
+  var old=tasks.find(function(t){return t.id===snzId;});
+  if(old)gcalDeleteEvents(old);
+  tasks=tasks.map(function(t){return t.id===snzId?Object.assign({},t,{reminderDate:cal.snz.sel,reminderTime:h+':'+m,gcalEventIds:[]}):t;});
+  saveTasks();
+  var upd=tasks.find(function(t){return t.id===snzId;});
+  if(upd)gcalCreateEvents(upd);
+  closeSnz();render();
+}
+
+// ── CALENDAR ──
+function closeCals(){['dueCal','remCal','snzCal'].forEach(function(id){document.getElementById(id).classList.remove('on');});}
+function togCal(type){
+  var ids={due:'dueCal',rem:'remCal',snz:'snzCal'};
+  var el=document.getElementById(ids[type]),was=el.classList.contains('on');
+  closeCals();
+  if(!was){if(!cal[type].y){var n=new Date();cal[type].y=n.getFullYear();cal[type].m=n.getMonth();}drawCal(type);el.classList.add('on');}
+}
+function drawCal(type){
+  var ids={due:'dueCal',rem:'remCal',snz:'snzCal'};
+  var s=cal[type],ts=toDS(new Date());
+  var fd=new Date(s.y,s.m,1).getDay(),di=new Date(s.y,s.m+1,0).getDate();
+  var html='<div class="cal-hdr"><button class="cal-nav" onclick="navCal(\''+type+'\',-1)">›</button>'+
+    '<div class="cal-my">'+MO[s.m]+' '+s.y+'</div>'+
+    '<button class="cal-nav" onclick="navCal(\''+type+'\',1)">‹</button></div>'+
+    '<div class="cal-wd">'+WD.map(function(w){return '<div class="cal-w">'+w+'</div>';}).join('')+'</div>'+
+    '<div class="cal-days">';
+  for(var i=0;i<fd;i++)html+='<div class="d emp"></div>';
+  for(var d=1;d<=di;d++){
+    var ds=s.y+'-'+p2(s.m+1)+'-'+p2(d);
+    var cls='d';
+    if(ds===ts)cls+=' today';if(ds===s.sel)cls+=' sel';if(ds<ts)cls+=' past';
+    html+='<div class="'+cls+'" onclick="'+(ds<ts?'':'pickDate(\''+type+'\',\''+ds+'\')')+'">'+d+'</div>';
+  }
+  html+='</div>';
+  document.getElementById(ids[type]).innerHTML=html;
+}
+function navCal(type,dir){cal[type].m+=dir;if(cal[type].m>11){cal[type].m=0;cal[type].y++;}if(cal[type].m<0){cal[type].m=11;cal[type].y--;}drawCal(type);}
+function pickDate(type,ds){
+  cal[type].sel=ds;
+  var tm={due:'dueTxt',rem:'remTxt',snz:'snzTxt'},cm={due:'dueCal',rem:'remCal',snz:'snzCal'};
+  setTxt(tm[type],fmtD(ds),false);document.getElementById(cm[type]).classList.remove('on');
+}
+
+// ── PERSIST ──
+function saveTasks(){localStorage.setItem('hw_tasks',JSON.stringify(tasks));}
+function saveCompleted(){localStorage.setItem('hw_completed',JSON.stringify(completed));}
+
+init();
+</script>
+</body>
+</html>
