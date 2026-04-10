@@ -13,7 +13,15 @@ async function getToken() {
     headers: { Authorization: `Bearer ${token}` }
   });
   const d = await r.json();
-  return d.result ? JSON.parse(d.result) : null;
+  if (!d.result) return null;
+  // Handle both single and double encoded JSON
+  try {
+    const parsed = JSON.parse(d.result);
+    if (typeof parsed === 'string') return JSON.parse(parsed);
+    return parsed;
+  } catch(e) {
+    return null;
+  }
 }
 
 async function setToken(data) {
